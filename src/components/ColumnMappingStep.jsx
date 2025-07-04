@@ -1,21 +1,133 @@
-import { useCallback, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useWizard } from 'react-use-wizard';
-import { useCSVWizard } from '../hooks/useCSVWizard'; // Custom hook to access the uploaded files from it's context
-
+import { useCSVWizard } from '../hooks/useCSVWizard';
+import { usePapaParse } from 'react-papaparse';
 
 function ColumnMappingStep() {
     const { nextStep } = useWizard();
-    const { uploadedFile, selectedAccount } = useCSVWizard(); // Get uploadedFile & account state
-    // Access the uploaded file and account setter from the context
-    const [loading, setLoading] = useState(false);
+    const { uploadedFile } = useCSVWizard(); // get uploadedFile from context
+    const { readString } = usePapaParse(); // parse CSV content as a string.
+    const [previewRows, setPreviewRows] = useState([]); // Store preview rows for the CSV file
+
+    const [headers, setHeaders] = useState([]); // Store CSV headers extracted from the file
+    const [mapping, setMapping] = useState({ // STores how the user maps the columns
+        date: '',
+        amount: '',
+        memo: '',
+        type: ''
+    });
+
+    // Minimum required fields for mapping
+    const requiredFields = ['date', 'amount', 'memo', 'type'];
+
+    // Enable next button only when all required fields are mapped
+    const canProceed = requiredFields.every((field) => mapping[field]);
+
+    // Parse file contents when component mounts
+    useEffect(() => {
+        if (!uploadedFile) return; // If uploaded file is somehow missing stop here
+
+        const reader = new FileReader(); // Create a new FileReader instance to read the file
+
+        reader.onload = ({ target }) => { // When the file is loaded, parse its content
+            const fileContent = target.result;
+
+            readString(fileContent, {
+                header: true,
+                preview: 3, // We just want the headers which are in the first row
+                skipEmptyLines: true,
+                complete: (results) => {
+                    if (results.data.length > 0) {
+                        const firstRow = results.data[0];
+                        const cols = Object.keys(firstRow);
+                        setHeaders(cols);
+                        setPreviewRows(results.data); // Save preview rows
+                    }
+                },
+            });
+        };
+
+        reader.readAsText(uploadedFile);
+    }, [uploadedFile, readString]);
+
+    // Render the column mapping UI when use makes changes
+    const handleMappingChange = (field, value) => {
+        setMapping((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
+    };
+
+    const handleNext = () => {
+        if (!canProceed) return;
+        // Save mapping to context 
+        // Move onto next step
+        nextStep();
+    };
 
     return (
-
         <div>
-            <h2>Step 3: Column Mapping</h2>
-            <h3>For: {selectedAccount}</h3>
+           <h2>Step 3: Map Your Columns</h2>
+        <div>
+            {previewRows.length > 0 && (
+                <div style={{ marginBottom: '2rem' }}>
+                    <h3>CSV Preview</h3>
+                    <table border="1" cellPadding="5">
+                        <thead>
+                            <tr>
+                                {headers.map((header) => (
+                                    <th key={header}>{header}</th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {previewRows.map((row, rowIndex) => (
+                                <tr key={rowIndex}>
+                                    {headers.map((header) => (
+                                        <td key={header}>{row[header]}</td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
 
+            <h3>Please match your CSV headers to the system fields below.</h3>
+            {['date', 'amount', 'description', 'type'].map((field) => (
+                <div key={field} style={{ marginBottom: '1rem' }}>
+                    <label htmlFor={field}>
+                        {field.charAt(0).toUpperCase() + field.slice(1)}:
+                    </label>
+                    <select
+                        id={field}
+                        value={mapping[field]}
+                        onChange={(e) => handleMappingChange(field, e.target.value)}
+                    >
+                        <option value="">-- Select a column --</option>
+                        {headers.map((header) => (
+                            <option key={header} value={header}>
+                                {header}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            ))}
 
+            <button
+                type="button"
+                onClick={handleNext}
+                disabled={!canProceed}
+                style={{
+                    marginTop: '20px',
+                    padding: '10px 20px',
+                    cursor: canProceed ? 'pointer' : 'not-allowed',
+                    opacity: canProceed ? 1 : 0.5,
+                }}
+            >
+                Next
+            </button>
+        </div>
         </div>
     );
 }
