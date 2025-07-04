@@ -1,8 +1,8 @@
 import { useContext } from 'react';
-import { UploadContext } from '../context/UploadContext.jsx';
+import { CSVWizardContext } from '../context/CSVWizardContext.jsx';
 
-// Custom hook to allow components to easily access the uploaded file state
-// avoids using useContext(UploadContext) everywhere
+// Custom hook to allow components to easily access the CSV wizard state
+// avoids using useContext(CSVWizardContext) everywhere
 export function useUpload() {
-  return useContext(UploadContext);
+  return useContext(CSVWizardContext);
 }

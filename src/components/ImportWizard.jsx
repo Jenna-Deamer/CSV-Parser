@@ -1,15 +1,17 @@
 import { Wizard } from 'react-use-wizard';
 import UploadStep from './UploadStep';
-import { UploadProvider } from '../context/UploadContext';
+import { CSVWizardProvider } from '../context/CSVWizardContext';
+import AssignAccountStep from './AssignAccountStep';
 
 function ImportWizard() {
 
     return (
-        <UploadProvider>
+        <CSVWizardProvider>
             <Wizard>
                 <UploadStep />
+                <AssignAccountStep />
             </Wizard>
-        </UploadProvider>
+        </CSVWizardProvider>
     )
 }
 
