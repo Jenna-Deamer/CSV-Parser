@@ -1,9 +1,9 @@
 import { useWizard } from 'react-use-wizard';
-import { useUpload } from '../hooks/useUpload';
+import { useCSVWizard } from '../hooks/useCSVWizard';
 
 function AssignAccountStep() {
     const { nextStep } = useWizard();
-    const { uploadedFile, selectedAccount, setSelectedAccount } = useUpload(); // Get uploadedFile & account state
+    const { uploadedFile, selectedAccount, setSelectedAccount } = useCSVWizard(); // Get uploadedFile & account state
     
     // mock list of accounts
     const listOfAccounts = [

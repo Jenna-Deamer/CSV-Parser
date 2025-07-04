@@ -1,12 +1,12 @@
 import { useCallback } from 'react';
 import Dropzone from 'react-dropzone';
 import { useWizard } from 'react-use-wizard';
-import { useUpload } from '../hooks/useUpload'; // Custom hook to access the uploaded files from it's context
+import { useCSVWizard } from '../hooks/useCSVWizard'; // Custom hook to access the uploaded files from it's context
 
 
 function UploadStep() {
     const { nextStep } = useWizard();
-    const { uploadedFile, setUploadedFile } = useUpload(); // Access the uploaded file and setter from the context
+    const { uploadedFile, setUploadedFile } = useCSVWizard(); // Access the uploaded file and setter from the context
 
     const onDrop = useCallback((acceptedFiles) => {
         setUploadedFile(acceptedFiles[0]); // Only accept one file
