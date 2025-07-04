@@ -5,7 +5,7 @@ import { usePapaParse } from 'react-papaparse';
 
 function ColumnMappingStep() {
     const { nextStep } = useWizard();
-    const { uploadedFile } = useCSVWizard(); // get uploadedFile from context
+    const { uploadedFile, setColumnMapping } = useCSVWizard(); // get uploadedFile from context
     const { readString } = usePapaParse(); // parse CSV content as a string.
     const [previewRows, setPreviewRows] = useState([]); // Store preview rows for the CSV file
 
@@ -50,84 +50,86 @@ function ColumnMappingStep() {
         reader.readAsText(uploadedFile);
     }, [uploadedFile, readString]);
 
-    // Render the column mapping UI when use makes changes
+    // Render the column mapping UI when user makes changes
     const handleMappingChange = (field, value) => {
-        setMapping((prev) => ({
-            ...prev,
+        const newMapping = {
+            ...mapping,
             [field]: value,
-        }));
+        };
+        setMapping(newMapping);
+        setColumnMapping(newMapping); // Update context immediately
     };
 
     const handleNext = () => {
         if (!canProceed) return;
-        // Save mapping to context 
-        // Move onto next step
+        // Save mapping to context & move to next step
+        setColumnMapping(mapping);
         nextStep();
     };
 
     return (
         <div>
-           <h2>Step 3: Map Your Columns</h2>
-        <div>
-            {previewRows.length > 0 && (
-                <div style={{ marginBottom: '2rem' }}>
-                    <h3>CSV Preview</h3>
-                    <table border="1" cellPadding="5">
-                        <thead>
-                            <tr>
-                                {headers.map((header) => (
-                                    <th key={header}>{header}</th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {previewRows.map((row, rowIndex) => (
-                                <tr key={rowIndex}>
+            <h2>Step 3: Map Your Columns</h2>
+            <div>
+                {previewRows.length > 0 && (
+                    <div style={{ marginBottom: '2rem' }}>
+                        <h3>CSV Preview</h3>
+                        <table border="1" cellPadding="5">
+                            <thead>
+                                <tr>
                                     {headers.map((header) => (
-                                        <td key={header}>{row[header]}</td>
+                                        <th key={header}>{header}</th>
                                     ))}
                                 </tr>
+                            </thead>
+                            <tbody>
+                                {previewRows.map((row, rowIndex) => (
+                                    <tr key={rowIndex}>
+                                        {headers.map((header) => (
+                                            <td key={header}>{row[header]}</td>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+
+                <h3>Please match your CSV headers to the system fields below.</h3>
+                {['date', 'amount', 'memo', 'type'].map((field) => (
+                    <div key={field} style={{ marginBottom: '1rem' }}>
+                        <label htmlFor={field}>
+                            {field.charAt(0).toUpperCase() + field.slice(1)}:
+                        </label>
+                        <select
+                            id={field}
+                            value={mapping[field]}
+                            onChange={(e) => handleMappingChange(field, e.target.value)}
+                        >
+                            <option value="">-- Select a column --</option>
+                            {headers.map((header) => (
+                                <option key={header} value={header}>
+                                    {header}
+                                </option>
                             ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
+                        </select>
+                    </div>
+                ))}
 
-            <h3>Please match your CSV headers to the system fields below.</h3>
-            {['date', 'amount', 'description', 'type'].map((field) => (
-                <div key={field} style={{ marginBottom: '1rem' }}>
-                    <label htmlFor={field}>
-                        {field.charAt(0).toUpperCase() + field.slice(1)}:
-                    </label>
-                    <select
-                        id={field}
-                        value={mapping[field]}
-                        onChange={(e) => handleMappingChange(field, e.target.value)}
-                    >
-                        <option value="">-- Select a column --</option>
-                        {headers.map((header) => (
-                            <option key={header} value={header}>
-                                {header}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-            ))}
-
-            <button
-                type="button"
-                onClick={handleNext}
-                disabled={!canProceed}
-                style={{
-                    marginTop: '20px',
-                    padding: '10px 20px',
-                    cursor: canProceed ? 'pointer' : 'not-allowed',
-                    opacity: canProceed ? 1 : 0.5,
-                }}
-            >
-                Next
-            </button>
-        </div>
+                <button
+                    type="button"
+                    onClick={handleNext}
+                    disabled={!canProceed}
+                    style={{
+                        marginTop: '20px',
+                        padding: '10px 20px',
+                        cursor: canProceed ? 'pointer' : 'not-allowed',
+                        opacity: canProceed ? 1 : 0.5,
+                    }}
+                >
+                    Next
+                </button>
+            </div>
         </div>
     );
 }
