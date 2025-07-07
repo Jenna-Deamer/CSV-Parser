@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useWizard } from 'react-use-wizard';
 import { useCSVWizard } from '../hooks/useCSVWizard';
 import { usePapaParse } from 'react-papaparse';
+import { uploadCSVData } from '../utils/uploadCSVData';
 
 function ColumnMappingStep() {
     const { nextStep } = useWizard();
@@ -64,32 +65,10 @@ function ColumnMappingStep() {
         if (!canProceed) return;
         // Save mapping to context
         setColumnMapping(mapping);
-
-        // Send raw file, mappings and selected account to backend
-        const formData = new FormData();
-        formData.append('file', uploadedFile);
-        formData.append('mapping', JSON.stringify(mapping));
-        formData.append('account', selectedAccount);
-
-        console.log('Sending data to backend:', {
-            fileName: uploadedFile.name,
-            mapping: mapping,
-            account: selectedAccount
-        });
-    
+        // upload the CSV data, mapping and selected account to the backend
         try {
-            const response = await fetch('http://localhost:3000/api/upload', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) {
-                // handle error
-                console.error('Upload failed');
-                return;
-            }
-
-            nextStep(); // move to Step 4 only after successful upload
+            await uploadCSVData(uploadedFile, mapping, selectedAccount);
+            nextStep(); // move to Step 4 after successful upload
         } catch (err) {
             console.error('Upload error:', err);
         }
