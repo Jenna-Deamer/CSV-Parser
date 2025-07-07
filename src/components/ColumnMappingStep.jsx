@@ -5,7 +5,7 @@ import { usePapaParse } from 'react-papaparse';
 
 function ColumnMappingStep() {
     const { nextStep } = useWizard();
-    const { uploadedFile, setColumnMapping } = useCSVWizard(); // get uploadedFile from context
+    const { uploadedFile, setColumnMapping, selectedAccount } = useCSVWizard(); // get uploadedFile from context
     const { readString } = usePapaParse(); // parse CSV content as a string.
     const [previewRows, setPreviewRows] = useState([]); // Store preview rows for the CSV file
 
@@ -60,11 +60,39 @@ function ColumnMappingStep() {
         setColumnMapping(newMapping); // Update context immediately
     };
 
-    const handleNext = () => {
+    const handleNext = async () => {
         if (!canProceed) return;
-        // Save mapping to context & move to next step
+        // Save mapping to context
         setColumnMapping(mapping);
-        nextStep();
+
+        // Send raw file, mappings and selected account to backend
+        const formData = new FormData();
+        formData.append('file', uploadedFile);
+        formData.append('mapping', JSON.stringify(mapping));
+        formData.append('account', selectedAccount);
+
+        console.log('Sending data to backend:', {
+            fileName: uploadedFile.name,
+            mapping: mapping,
+            account: selectedAccount
+        });
+    
+        try {
+            const response = await fetch('http://localhost:3000/api/upload', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                // handle error
+                console.error('Upload failed');
+                return;
+            }
+
+            nextStep(); // move to Step 4 only after successful upload
+        } catch (err) {
+            console.error('Upload error:', err);
+        }
     };
 
     return (
