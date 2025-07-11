@@ -11,7 +11,7 @@ function ColumnMappingStep() {
     const [previewRows, setPreviewRows] = useState([]); // Store preview rows for the CSV file
 
     const [headers, setHeaders] = useState([]); // Store CSV headers extracted from the file
-    const [mapping, setMapping] = useState({ // STores how the user maps the columns
+    const [mapping, setMapping] = useState({ // Stores how the user maps the columns
         date: '',
         amount: '',
         memo: '',
