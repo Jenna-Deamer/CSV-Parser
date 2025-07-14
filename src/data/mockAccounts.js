@@ -23,7 +23,7 @@
             name: "Tangerine Mastercard",
             accountType: "Credit",
             institution: "Tangerine",
-            registrationType: null,
+            registrationType: "N/A",
             description: "2% cashback credit card",
             isArchived: false
         },

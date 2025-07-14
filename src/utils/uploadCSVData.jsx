@@ -3,7 +3,7 @@ export const uploadCSVData = async (file, mapping, account) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('mapping', JSON.stringify(mapping));
-    formData.append('account', account);
+    formData.append('account', JSON .stringify(account));
 
 
     console.log('Sending data to backend:', {

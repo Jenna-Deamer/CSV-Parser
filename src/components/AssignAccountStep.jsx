@@ -15,6 +15,7 @@ function AssignAccountStep() {
         const accountId = parseInt(e.target.value);
         const account = filteredAccounts.find(acc => acc.id === accountId);
         setSelectedAccount(account);
+        console.log('Selected account:', account);
     };
 
     const handleNext = () => {
